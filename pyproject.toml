@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "kahootimitation"
+version = "0.1.0"
+description = "Object Oriented Programming classes' final project"
+authors = ["Agata Tekien <tekienagata@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.3.0"
+pytest = "^8.1.1"
+isort = "^5.13.2"
+pygame = "^2.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
