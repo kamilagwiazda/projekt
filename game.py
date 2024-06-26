@@ -164,19 +164,37 @@ class GameMenu:
 
     def ask_questions_for_current_player(self):
         player = game.players[game.current_player_index][0]
-        self.display(f"Player: {player}")
-        waiting_for_click = True
+        self.display_get_ready_screen(player)
+        waiting_for_enter = True
 
-        while waiting_for_click:
+        while waiting_for_enter:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    waiting_for_click = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        waiting_for_enter = False
 
         self.ask_questions()
 
+    def display_get_ready_screen(self, player):
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+
+        logo_text = LOGO_FONT.render("Kahoot!", True, WHITE)
+        logo_text = pygame.transform.scale(logo_text,
+                                           (int(logo_text.get_width() * 0.5), int(logo_text.get_height() * 0.5)))
+        self.screen.blit(logo_text, (SCREEN_WIDTH // 2 - logo_text.get_width() // 2, 20))
+
+        larger_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 40)
+        ready_text = larger_font.render(f"Get ready to play, {player}!", True, WHITE)
+        self.screen.blit(ready_text, (SCREEN_WIDTH // 2 - ready_text.get_width() // 2, SCREEN_HEIGHT // 2 - 50))
+
+        ready_press_text = MAIN_FONT.render("If you are ready, press ENTER.", True, WHITE)
+        self.screen.blit(ready_press_text, (SCREEN_WIDTH // 2 - ready_press_text.get_width() // 2, SCREEN_HEIGHT - 100))
+
+        pygame.display.flip()
     def ask_questions(self):
         while self.current_question_index < len(game.question_sets):
             question = game.question_sets[self.current_question_index]
