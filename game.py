@@ -11,20 +11,28 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+BUTTON_BG_COLOR = (255, 255, 255)
+BUTTON_SHADOW_COLOR = (200, 200, 200)
+BUTTON_TEXT_COLOR = (0, 0, 0)
 LOGO_FONT = pygame.font.Font('fonts/gooddog-plain.regular.ttf', 150)
 MAIN_FONT = pygame.font.Font('fonts/Montserrat-Bold.ttf', 20)
+BUTTON_FONT = pygame.font.Font('fonts/Montserrat-Bold.ttf', 20)
 BACKGROUND_IMAGE = 'images/background.jpg'
+BUTTON_RADIUS = 10
 
 class Button:
     def __init__(self, rect, color, text):
         self.rect = pygame.Rect(rect)
         self.color = color
         self.text = text
-        self.text_surf = MAIN_FONT.render(text, True, WHITE)
+        self.text_surf = BUTTON_FONT.render(text, True, BUTTON_TEXT_COLOR)
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)
+        shadow_rect = self.rect.move(4, 4)
+        pygame.draw.rect(screen, BUTTON_SHADOW_COLOR, shadow_rect, border_radius=BUTTON_RADIUS)
+
+        pygame.draw.rect(screen, self.color, self.rect, border_radius=BUTTON_RADIUS)
         screen.blit(self.text_surf, self.text_rect)
 
     def is_clicked(self, mouse_pos):
@@ -52,7 +60,7 @@ class BaseMenu:
             option_surface = MAIN_FONT.render(option_text, True, WHITE)
             self.screen.blit(
                 option_surface,
-                (SCREEN_WIDTH // 2 - option_surface.get_width() // 2, 260 + index * 70)
+                (SCREEN_WIDTH // 2 - option_surface.get_width() // 2, 300 + index * 70)
             )
         pygame.display.flip()
 
@@ -65,7 +73,7 @@ class BaseMenu:
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     for index, (_, callback) in enumerate(self.options):
-                        if 200 + index * 70 <= event.pos[1] <= 260 + index * 70 + 36:
+                        if 200 + index * 70 <= event.pos[1] <= 300 + index * 70 + 36:
                             callback()
 
             self.display()
@@ -178,7 +186,7 @@ class GameMenu:
         self.answer_buttons = []
         for i, answer in enumerate(answers):
             answer_button = Button(
-                (SCREEN_WIDTH // 2 - 100, 200 + i * 70, 200, 50), WHITE, answer
+                (SCREEN_WIDTH // 2 - 150, 200 + i * 70, 300, 50), BUTTON_BG_COLOR, answer
             )
             answer_button.draw(self.screen)
             self.answer_buttons.append(answer_button)
@@ -217,8 +225,8 @@ class GameMenu:
 
 class QuestionSet:
     def __init__(self):
-        self.add_button = Button((300, 400, 200, 50), BLACK, "Add a new question")
-        self.back_button = Button((300, 500, 200, 50), BLACK, "Back to main menu")
+        self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a new question")
+        self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
 
     def add_question_set(self, question, correct_answer, incorrect_answers):
         game.question_sets.append(
@@ -312,6 +320,7 @@ class QuestionSetMenu(BaseMenu):
     def go_back_to_main_menu(self):
         global main_menu_running
         main_menu_running = False
+        main()
 
 
 class PlayerSet:
@@ -351,8 +360,8 @@ class PlayerMenu(BaseMenu):
     def __init__(self, screen):
         super().__init__(screen, "Current players")
         self.player_set = PlayerSet()
-        self.add_button = Button((300, 400, 200, 50), BLACK, "Add a player")
-        self.back_button = Button((300, 500, 200, 50), BLACK, "Back to main menu")
+        self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a player")
+        self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
 
     def display(self):
         background = pygame.image.load(BACKGROUND_IMAGE)
@@ -392,6 +401,7 @@ class PlayerMenu(BaseMenu):
     def go_back_to_main_menu(self):
         global main_menu_running
         main_menu_running = False
+        main()
 
 
 class Game:
