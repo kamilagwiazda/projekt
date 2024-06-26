@@ -26,6 +26,8 @@ class Button:
     def __init__(self, rect, color, text):
         self.rect = pygame.Rect(rect)
         self.color = color
+        self.original_color = color
+        self.hover_color = (200, 200, 200)
         self.text = text
         self.text_surf = BUTTON_FONT.render(text, True, BUTTON_TEXT_COLOR)
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
@@ -35,6 +37,12 @@ class Button:
         pygame.draw.rect(screen, BUTTON_SHADOW_COLOR, shadow_rect, border_radius=BUTTON_RADIUS)
 
         pygame.draw.rect(screen, self.color, self.rect, border_radius=BUTTON_RADIUS)
+        screen.blit(self.text_surf, self.text_rect)
+
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, self.hover_color, self.rect, border_radius=BUTTON_RADIUS)
+        else:
+            pygame.draw.rect(screen, self.color, self.rect, border_radius=BUTTON_RADIUS)
         screen.blit(self.text_surf, self.text_rect)
 
     def is_clicked(self, mouse_pos):
