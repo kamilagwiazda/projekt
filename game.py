@@ -87,6 +87,7 @@ class MainMenu(BaseMenu):
                                                  "Create Questions Set")
         self.add_player_button = Button((SCREEN_WIDTH // 2 - 150, 370, 300, 50), BUTTON_BG_COLOR, "Add a Player")
         self.start_game_button = Button((SCREEN_WIDTH // 2 - 150, 440, 300, 50), BUTTON_BG_COLOR, "Start the Game")
+        self.exit_button = Button((SCREEN_WIDTH // 2 - 150, 510, 300, 50), BUTTON_BG_COLOR, "Exit")
 
     def display(self):
         background = pygame.image.load(BACKGROUND_IMAGE)
@@ -97,6 +98,7 @@ class MainMenu(BaseMenu):
         self.create_question_set_button.draw(self.screen)
         self.add_player_button.draw(self.screen)
         self.start_game_button.draw(self.screen)
+        self.exit_button.draw(self.screen)
 
         pygame.display.flip()
 
@@ -114,6 +116,9 @@ class MainMenu(BaseMenu):
                             self.add_player()
                         if self.start_game_button.is_clicked(event.pos):
                             self.start_game()
+                        if self.exit_button.is_clicked(event.pos):
+                            pygame.quit()
+                            sys.exit()
 
                 self.display()
                 pygame.time.Clock().tick(30)
