@@ -56,12 +56,10 @@ class BaseMenu:
             title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50)
         )
 
-        for index, (option_text, _) in enumerate(self.options):
-            option_surface = MAIN_FONT.render(option_text, True, WHITE)
-            self.screen.blit(
-                option_surface,
-                (SCREEN_WIDTH // 2 - option_surface.get_width() // 2, 300 + index * 70)
-            )
+        for index, (option_text, callback) in enumerate(self.options):
+            option_button = Button((SCREEN_WIDTH // 2 - 150, 300 + index * 70, 300, 50), BUTTON_BG_COLOR, option_text)
+            option_button.draw(self.screen)
+
         pygame.display.flip()
 
     def run(self):
@@ -72,8 +70,10 @@ class BaseMenu:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    for index, (_, callback) in enumerate(self.options):
-                        if 200 + index * 70 <= event.pos[1] <= 300 + index * 70 + 36:
+                    for index, (option_text, callback) in enumerate(self.options):
+                        option_button = Button((SCREEN_WIDTH // 2 - 150, 300 + index * 70, 300, 50), BUTTON_BG_COLOR,
+                                               option_text)
+                        if option_button.is_clicked(event.pos):
                             callback()
 
             self.display()
@@ -83,10 +83,40 @@ class BaseMenu:
 class MainMenu(BaseMenu):
     def __init__(self, screen):
         super().__init__(screen, "Kahoot!")
-        self.add_option("Create Questions Set", self.create_question_set)
-        self.add_option("Add a Player", self.add_player)
-        self.add_option("Start the Game", self.start_game)
+        self.create_question_set_button = Button((SCREEN_WIDTH // 2 - 150, 300, 300, 50), BUTTON_BG_COLOR,
+                                                 "Create Questions Set")
+        self.add_player_button = Button((SCREEN_WIDTH // 2 - 150, 370, 300, 50), BUTTON_BG_COLOR, "Add a Player")
+        self.start_game_button = Button((SCREEN_WIDTH // 2 - 150, 440, 300, 50), BUTTON_BG_COLOR, "Start the Game")
 
+    def display(self):
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        title_text = LOGO_FONT.render(self.title, True, WHITE)
+        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+
+        self.create_question_set_button.draw(self.screen)
+        self.add_player_button.draw(self.screen)
+        self.start_game_button.draw(self.screen)
+
+        pygame.display.flip()
+
+    def run(self):
+            running = True
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if self.create_question_set_button.is_clicked(event.pos):
+                            self.create_question_set()
+                        if self.add_player_button.is_clicked(event.pos):
+                            self.add_player()
+                        if self.start_game_button.is_clicked(event.pos):
+                            self.start_game()
+
+                self.display()
+                pygame.time.Clock().tick(30)
     def create_question_set(self):
         QuestionSetMenu(self.screen).run()
 
@@ -280,7 +310,8 @@ class QuestionSet:
     def get_text_input(self, prompt, screen):
         text = ""
         input_active = True
-        self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 100, 300, 50), BUTTON_BG_COLOR, "Cancel")
+        self.submit_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 150, 300, 50), BUTTON_BG_COLOR, "Submit")
+        self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 80, 300, 50), BUTTON_BG_COLOR, "Cancel")
         input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 200)
         input_color = WHITE
         input_border_radius = 20
@@ -302,6 +333,8 @@ class QuestionSet:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                             if self.cancel_button.is_clicked(event.pos):
                                 return None
+                            if self.submit_button.is_clicked(event.pos):
+                                input_active = False
 
             background = pygame.image.load(BACKGROUND_IMAGE)
             screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -330,6 +363,7 @@ class QuestionSet:
             for i, line in enumerate(lines):
                 input_text = MAIN_FONT.render(line, True, BLACK)
                 screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
+            self.draw_submit_button(screen)
             self.draw_cancel_button(screen)
             pygame.display.flip()
             pygame.time.Clock().tick(30)
@@ -337,6 +371,9 @@ class QuestionSet:
 
     def draw_cancel_button(self, screen):
         self.cancel_button.draw(screen)
+
+    def draw_submit_button(self, screen):
+        self.submit_button.draw(screen)
 
 
 class QuestionSetMenu(BaseMenu):
@@ -376,7 +413,8 @@ class PlayerSet:
     def get_text_input(self, prompt, screen):
         text = ""
         input_active = True
-        self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 100, 300, 50), BUTTON_BG_COLOR, "Cancel")
+        self.submit_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 150, 300, 50), BUTTON_BG_COLOR, "Submit")
+        self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 80, 300, 50), BUTTON_BG_COLOR, "Cancel")
         input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 50)
         input_color = WHITE
         input_border_radius = 20
@@ -398,6 +436,8 @@ class PlayerSet:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.cancel_button.is_clicked(event.pos):
                         return None
+                    if self.submit_button.is_clicked(event.pos):
+                        input_active = False
 
             background = pygame.image.load(BACKGROUND_IMAGE)
             screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -423,6 +463,7 @@ class PlayerSet:
             for i, line in enumerate(lines):
                 input_text = MAIN_FONT.render(line.strip(), True, BLACK)
                 screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
+            self.draw_submit_button(screen)
             self.draw_cancel_button(screen)
             pygame.display.flip()
             pygame.time.Clock().tick(30)
@@ -430,7 +471,8 @@ class PlayerSet:
 
     def draw_cancel_button(self, screen):
         self.cancel_button.draw(screen)
-
+    def draw_submit_button(self, screen):
+        self.submit_button.draw(screen)
 
 class PlayerMenu(BaseMenu):
     def __init__(self, screen):
