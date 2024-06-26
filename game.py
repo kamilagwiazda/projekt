@@ -11,8 +11,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-#FONT = pygame.font.Font(None, 36)
-LOGO_FONT = pygame.font.Font('fonts/gooddog-plain.regular.ttf', 100)
+LOGO_FONT = pygame.font.Font('fonts/gooddog-plain.regular.ttf', 150)
 MAIN_FONT = pygame.font.Font('fonts/Montserrat-Bold.ttf', 20)
 BACKGROUND_IMAGE = 'images/background.jpg'
 
@@ -53,7 +52,7 @@ class BaseMenu:
             option_surface = MAIN_FONT.render(option_text, True, WHITE)
             self.screen.blit(
                 option_surface,
-                (SCREEN_WIDTH // 2 - option_surface.get_width() // 2, 200 + index * 70)
+                (SCREEN_WIDTH // 2 - option_surface.get_width() // 2, 260 + index * 70)
             )
         pygame.display.flip()
 
@@ -66,7 +65,7 @@ class BaseMenu:
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     for index, (_, callback) in enumerate(self.options):
-                        if 200 + index * 70 <= event.pos[1] <= 200 + index * 70 + 36:
+                        if 200 + index * 70 <= event.pos[1] <= 260 + index * 70 + 36:
                             callback()
 
             self.display()
