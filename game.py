@@ -228,23 +228,71 @@ class GameMenu:
     def display_question_with_answers(self, question):
         background = pygame.image.load(BACKGROUND_IMAGE)
         self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-        question_text = MAIN_FONT.render(question["question"], True, WHITE)
-        self.screen.blit(
-            question_text, (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 100)
-        )
 
+        qa_rect = pygame.Rect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)
+        pygame.draw.rect(self.screen, WHITE, qa_rect)
+        question_text = MAIN_FONT.render(question["question"], True, BLACK)
+        self.screen.blit(question_text, (qa_rect.x + 10, qa_rect.y + 10))
+
+        colors = [(224, 27, 62), (22, 103, 207), (214, 158, 1), (40, 135, 13)]
+        shapes = ["triangle", "diamond", "circle", "square"]
         answers = question["incorrect_answers"] + [question["correct_answer"]]
         random.shuffle(answers)
 
+        margin = 5
+        box_width = (qa_rect.width - 3 * margin) // 2
+        box_height = (qa_rect.height - 120 - 3 * margin) // 2
+        answer_positions = [
+            (qa_rect.x + margin, qa_rect.y + 120 + margin, box_width, box_height),
+            (qa_rect.x + box_width + 2 * margin, qa_rect.y + 120 + margin, box_width, box_height),
+            (qa_rect.x + margin, qa_rect.y + 120 + box_height + 2 * margin, box_width, box_height),
+            (qa_rect.x + box_width + 2 * margin, qa_rect.y + 120 + box_height + 2 * margin, box_width, box_height),
+        ]
+
         self.answer_buttons = []
         for i, answer in enumerate(answers):
-            answer_button = Button(
-                (SCREEN_WIDTH // 2 - 150, 200 + i * 70, 300, 50), BUTTON_BG_COLOR, answer
-            )
-            answer_button.draw(self.screen)
+            color = colors[i]
+            shape = shapes[i]
+            pos = answer_positions[i]
+            answer_rect = pygame.Rect(pos)
+            pygame.draw.rect(self.screen, color, answer_rect)
+
+            self.draw_shape(self.screen, shape, answer_rect, WHITE)
+
+            answer_text = MAIN_FONT.render(answer, True, WHITE)
+            self.screen.blit(answer_text, (answer_rect.x + 70, answer_rect.y + answer_rect.height // 2 - 10))
+
+
+            answer_button = Button(answer_rect, color, answer)
             self.answer_buttons.append(answer_button)
 
         pygame.display.flip()
+
+    def draw_shape(self, screen, shape, rect, color):
+        text_height = MAIN_FONT.size("A")[1]
+        shape_size = text_height // 2
+        center_x = rect.x + 35
+        center_y = rect.y + rect.height // 2
+        if shape == "triangle":
+            points = [
+                (center_x, center_y - shape_size),
+                (center_x - shape_size, center_y + shape_size),
+                (center_x + shape_size, center_y + shape_size),
+            ]
+            pygame.draw.polygon(screen, color, points)
+        elif shape == "diamond":
+            points = [
+                (center_x, center_y - shape_size),
+                (center_x - shape_size, center_y),
+                (center_x, center_y + shape_size),
+                (center_x + shape_size, center_y),
+            ]
+            pygame.draw.polygon(screen, color, points)
+        elif shape == "circle":
+            pygame.draw.circle(screen, color, (center_x, center_y), shape_size)
+        elif shape == "square":
+            pygame.draw.rect(screen, color,
+                             pygame.Rect(center_x - shape_size, center_y - shape_size, 2 * shape_size, 2 * shape_size))
 
     def check_answer(self, correct_answer, chosen_answer):
         end_time = time.time()
