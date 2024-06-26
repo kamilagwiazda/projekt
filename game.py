@@ -143,6 +143,8 @@ class GameMenu:
         self.current_question_index = 0
         self.start_time = None
         self.answer_buttons = []
+        self.message = ""
+        self.message_color = (102, 191, 58)
 
     def display(self, text):
         background = pygame.image.load(BACKGROUND_IMAGE)
@@ -195,6 +197,7 @@ class GameMenu:
         self.screen.blit(ready_press_text, (SCREEN_WIDTH // 2 - ready_press_text.get_width() // 2, SCREEN_HEIGHT - 100))
 
         pygame.display.flip()
+
     def ask_questions(self):
         while self.current_question_index < len(game.question_sets):
             question = game.question_sets[self.current_question_index]
@@ -212,7 +215,7 @@ class GameMenu:
                             if button.is_clicked(event.pos):
                                 chosen_answer = button.text
                                 self.check_answer(
-                                    question["correct_answer"], chosen_answer
+                                    question, question["correct_answer"], chosen_answer
                                 )
                                 waiting_for_answer = False
 
@@ -229,20 +232,21 @@ class GameMenu:
             self.display_score()
 
     def update_timer(self):
-                elapsed_time = time.time() - self.start_time
-                remaining_time = max(0, int(30 - elapsed_time))
-                timer_text = MAIN_FONT.render(str(remaining_time), True, WHITE)
-                timer_circle_color = (137, 76, 192)
-                pygame.draw.circle(self.screen, (0, 0, 0), (SCREEN_WIDTH - 50, 50), 30)
-                pygame.draw.circle(self.screen, timer_circle_color, (SCREEN_WIDTH - 50, 50), 30)
-                self.screen.blit(timer_text,
-                                 (SCREEN_WIDTH - 50 - timer_text.get_width() // 2, 50 - timer_text.get_height() // 2))
+        elapsed_time = time.time() - self.start_time
+        remaining_time = max(0, int(30 - elapsed_time))
+        timer_text = MAIN_FONT.render(str(remaining_time), True, WHITE)
+        timer_circle_color = (137, 76, 192)
+        pygame.draw.circle(self.screen, (0, 0, 0), (SCREEN_WIDTH - 50, 50), 30)
+        pygame.draw.circle(self.screen, timer_circle_color, (SCREEN_WIDTH - 50, 50), 30)
+        self.screen.blit(timer_text,
+                         (SCREEN_WIDTH - 50 - timer_text.get_width() // 2, 50 - timer_text.get_height() // 2))
 
-                pygame.display.flip()
+        pygame.display.flip()
 
     def show_points(self, points=0):
         player_name = game.players[game.current_player_index][0]
         game.scores[player_name] = game.scores.get(player_name, 0) + points
+
     def display_question_with_answers(self, question):
         background = pygame.image.load(BACKGROUND_IMAGE)
         self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -280,7 +284,6 @@ class GameMenu:
             answer_text = MAIN_FONT.render(answer, True, WHITE)
             self.screen.blit(answer_text, (answer_rect.x + 70, answer_rect.y + answer_rect.height // 2 - 10))
 
-
             answer_button = Button(answer_rect, color, answer)
             self.answer_buttons.append(answer_button)
 
@@ -312,19 +315,74 @@ class GameMenu:
             pygame.draw.rect(screen, color,
                              pygame.Rect(center_x - shape_size, center_y - shape_size, 2 * shape_size, 2 * shape_size))
 
-    def check_answer(self, correct_answer, chosen_answer):
+    def check_answer(self, question, correct_answer, chosen_answer):
         end_time = time.time()
         time_taken = end_time - self.start_time
 
         if chosen_answer == correct_answer:
             score = max(0, 100 - int(time_taken * 10))
+            self.message = f"Good job! +{score} points"
+            self.message_color = (102, 191, 58)
         else:
             score = 0
+            self.message = "You were close! 0 points"
+            self.message_color = (224, 27, 62)
 
         player_name = game.players[game.current_player_index][0]
         if player_name not in game.scores:
             game.scores[player_name] = 0
         game.scores[player_name] += score
+
+        self.display_feedback(question, correct_answer, chosen_answer)
+
+    def display_feedback(self, question, correct_answer, chosen_answer):
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+
+        qa_rect = pygame.Rect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)
+        pygame.draw.rect(self.screen, WHITE, qa_rect)
+        question_text = MAIN_FONT.render(question["question"], True, BLACK)
+        self.screen.blit(question_text, (qa_rect.x + 10, qa_rect.y + 10))
+
+        margin = 5
+        box_width = (qa_rect.width - 3 * margin) // 2
+        box_height = (qa_rect.height - 120 - 3 * margin) // 2
+        answer_positions = [
+            (qa_rect.x + margin, qa_rect.y + 120 + margin, box_width, box_height),
+            (qa_rect.x + box_width + 2 * margin, qa_rect.y + 120 + margin, box_width, box_height),
+            (qa_rect.x + margin, qa_rect.y + 120 + box_height + 2 * margin, box_width, box_height),
+            (qa_rect.x + box_width + 2 * margin, qa_rect.y + 120 + box_height + 2 * margin, box_width, box_height),
+        ]
+
+        for i, button in enumerate(self.answer_buttons):
+            answer_rect = button.rect
+            if button.text == correct_answer:
+                color = (102, 191, 58)
+                alpha = 255
+            elif button.text == chosen_answer:
+                color = (224, 27, 62)
+                alpha = 255
+            else:
+                color = (224, 27, 62)
+                alpha = 128
+
+            surface = pygame.Surface((answer_rect.width, answer_rect.height))
+            surface.set_alpha(alpha)
+            surface.fill(color)
+            self.screen.blit(surface, (answer_rect.x, answer_rect.y))
+
+            answer_text = MAIN_FONT.render(button.text, True, WHITE)
+            self.screen.blit(answer_text, (answer_rect.x + 70, answer_rect.y + answer_rect.height // 2 - 10))
+
+        # Display message
+        message_surface = MAIN_FONT.render(self.message, True, BLACK)
+        message_bg = pygame.Surface((message_surface.get_width() + 20, message_surface.get_height() + 10))
+        message_bg.fill(self.message_color)
+        self.screen.blit(message_bg, (qa_rect.x + 10, qa_rect.y + qa_rect.height + 20))
+        self.screen.blit(message_surface, (qa_rect.x + 20, qa_rect.y + qa_rect.height + 25))
+
+        pygame.display.flip()
+        pygame.time.wait(3000)
 
     def display_score(self):
         background = pygame.image.load(BACKGROUND_IMAGE)
@@ -340,6 +398,7 @@ class GameMenu:
             y_offset += 50
         pygame.display.flip()
         pygame.time.wait(5000)
+
 
 
 class QuestionSet:
