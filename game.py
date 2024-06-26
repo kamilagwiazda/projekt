@@ -387,18 +387,41 @@ class GameMenu:
     def display_score(self):
         background = pygame.image.load(BACKGROUND_IMAGE)
         self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-        score_text = "Final Scores:\n"
-        y_offset = 100
-        for player, score in game.scores.items():
-            player_score_text = MAIN_FONT.render(f"{player}: {score}", True, WHITE)
-            self.screen.blit(
-                player_score_text,
-                (SCREEN_WIDTH // 2 - player_score_text.get_width() // 2, y_offset),
-            )
+
+        small_logo_font = pygame.font.Font('fonts/gooddog-plain.regular.ttf', 80)
+        logo_text = small_logo_font.render("Kahoot!", True, WHITE)
+        self.screen.blit(logo_text, (SCREEN_WIDTH // 2 - logo_text.get_width() // 2, 20))
+
+        title_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 40)
+        scoreboard_text = title_font.render("Scoreboard", True, WHITE)
+        self.screen.blit(scoreboard_text, (SCREEN_WIDTH // 2 - scoreboard_text.get_width() // 2, 120))
+
+
+        sorted_scores = sorted(game.scores.items(), key=lambda item: item[1], reverse=True)
+
+        ranking_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 25)
+        y_offset = 200
+        previous_score = None
+
+        for rank, (player, score) in enumerate(sorted_scores, 1):
+            rank_text = ranking_font.render(f"{rank}. {player}", True, WHITE)
+            score_text = ranking_font.render(f"{score}", True, WHITE)
+            self.screen.blit(rank_text, (100, y_offset))
+            self.screen.blit(score_text, (SCREEN_WIDTH - 200, y_offset))
+
+            if previous_score is not None:
+                difference = previous_score - score
+                diff_text = ranking_font.render(f"-{difference}", True, WHITE)
+                self.screen.blit(diff_text, (SCREEN_WIDTH // 2 - diff_text.get_width() // 2, y_offset))
+
+            previous_score = score
             y_offset += 50
+
         pygame.display.flip()
         pygame.time.wait(5000)
 
+
+        game.reset_scores()
 
 
 class QuestionSet:
@@ -687,6 +710,8 @@ class Game:
                 "Cannot start game: At least one question set and one player required"
             )
 
+    def reset_scores(self):
+        self.scores = {}
 
 # Initialize Game
 game = Game()
