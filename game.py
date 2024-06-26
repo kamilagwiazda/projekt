@@ -262,18 +262,25 @@ class QuestionSet:
 
     def process_add_question_set(self, screen):
         question = self.get_text_input("Enter the question: ", screen)
+        if question is None:
+            return
         correct_answer = self.get_text_input("Enter the correct answer: ", screen)
-        incorrect_answers = [
-            self.get_text_input("Enter incorrect answer 1: ", screen),
-            self.get_text_input("Enter incorrect answer 2: ", screen),
-            self.get_text_input("Enter incorrect answer 3: ", screen),
-        ]
+        if correct_answer is None:
+            return
+        incorrect_answers = []
+        for i in range(3):
+            incorrect_answer = self.get_text_input(f"Enter incorrect answer {i + 1}: ", screen)
+            if incorrect_answer is None:
+                return
+            incorrect_answers.append(incorrect_answer)
+
         self.add_question_set(question, correct_answer, incorrect_answers)
         print("Question set added")
 
     def get_text_input(self, prompt, screen):
         text = ""
         input_active = True
+        self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 100, 300, 50), BUTTON_BG_COLOR, "Cancel")
         while input_active:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -286,6 +293,9 @@ class QuestionSet:
                         text = text[:-1]
                     else:
                         text += event.unicode
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                            if self.cancel_button.is_clicked(event.pos):
+                                return None
 
             background = pygame.image.load(BACKGROUND_IMAGE)
             screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -293,9 +303,13 @@ class QuestionSet:
             input_text = MAIN_FONT.render(text, True, WHITE)
             screen.blit(prompt_text, (50, 50))
             screen.blit(input_text, (50, 100))
+            self.draw_cancel_button(screen)
             pygame.display.flip()
             pygame.time.Clock().tick(30)
         return text
+
+    def draw_cancel_button(self, screen):
+        self.cancel_button.draw(screen)
 
 
 class QuestionSetMenu(BaseMenu):
@@ -326,12 +340,16 @@ class QuestionSetMenu(BaseMenu):
 class PlayerSet:
     def process_add_player(self, screen):
         player_name = self.get_text_input("Enter player's name: ", screen)
-        game.players.append((player_name, 0))
-        print("Player added")
+        if player_name is not None:
+          game.players.append((player_name, 0))
+          print("Player added")
+        else:
+          print("Adding player was cancelled.")
 
     def get_text_input(self, prompt, screen):
         text = ""
         input_active = True
+        self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 100, 300, 50), BUTTON_BG_COLOR, "Cancel")
         while input_active:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -344,6 +362,9 @@ class PlayerSet:
                         text = text[:-1]
                     else:
                         text += event.unicode
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.cancel_button.is_clicked(event.pos):
+                        return None
 
             background = pygame.image.load(BACKGROUND_IMAGE)
             screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -351,9 +372,13 @@ class PlayerSet:
             input_text = MAIN_FONT.render(text, True, WHITE)
             screen.blit(prompt_text, (50, 50))
             screen.blit(input_text, (50, 100))
+            self.draw_cancel_button(screen)
             pygame.display.flip()
             pygame.time.Clock().tick(30)
         return text
+
+    def draw_cancel_button(self, screen):
+        self.cancel_button.draw(screen)
 
 
 class PlayerMenu(BaseMenu):
