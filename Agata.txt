@@ -1,0 +1,10 @@
+Wymagania:
+- T można dodawać pytania i odpowiedzi dla danej gry
+- T tylko jedna odpowiedź jest prawidłowa (ale odp nie muszą być unikalne)
+- T wyświetla się pytania, gracz klika myszką i dopiero wyświetlają się odpowiedzi
+- T nie można zacząć gry jeżeli nie ma żadnego zestawu pytań
+- osoba z najwyższym wynikiem wygrywa
+- sprawdzić, wyczyścić nazwy
+- sprawdzić możliwość wyczyszczenia kodu pod wględem powtarzalnym elementów i dziedziczenia
+- możliwość usuwania pytań i graczy
+- zastanowić się, czy podział na pliki jest sensowny
