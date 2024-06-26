@@ -20,6 +20,8 @@ BUTTON_FONT = pygame.font.Font('fonts/Montserrat-Bold.ttf', 20)
 BACKGROUND_IMAGE = 'images/background.jpg'
 BUTTON_RADIUS = 10
 
+pygame.mixer.init()
+
 class Button:
     def __init__(self, rect, color, text):
         self.rect = pygame.Rect(rect)
@@ -89,6 +91,9 @@ class MainMenu(BaseMenu):
         self.start_game_button = Button((SCREEN_WIDTH // 2 - 150, 440, 300, 50), BUTTON_BG_COLOR, "Start the Game")
         self.exit_button = Button((SCREEN_WIDTH // 2 - 150, 510, 300, 50), BUTTON_BG_COLOR, "Exit")
 
+        pygame.mixer.music.load('music/background.mp3')
+        pygame.mixer.music.play(-1)
+
     def display(self):
         background = pygame.image.load(BACKGROUND_IMAGE)
         self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -103,22 +108,27 @@ class MainMenu(BaseMenu):
         pygame.display.flip()
 
     def run(self):
-            running = True
-            while running:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
+        pygame.mixer.music.load('music/background.mp3')
+        pygame.mixer.music.play(-1)
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.create_question_set_button.is_clicked(event.pos):
+                        self.create_question_set()
+                    if self.add_player_button.is_clicked(event.pos):
+                        self.add_player()
+                    if self.start_game_button.is_clicked(event.pos):
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('music/gameplay.mp3')
+                        pygame.mixer.music.play()
+                        self.start_game()
+                    if self.exit_button.is_clicked(event.pos):
                         pygame.quit()
                         sys.exit()
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        if self.create_question_set_button.is_clicked(event.pos):
-                            self.create_question_set()
-                        if self.add_player_button.is_clicked(event.pos):
-                            self.add_player()
-                        if self.start_game_button.is_clicked(event.pos):
-                            self.start_game()
-                        if self.exit_button.is_clicked(event.pos):
-                            pygame.quit()
-                            sys.exit()
 
                 self.display()
                 pygame.time.Clock().tick(30)
@@ -420,8 +430,11 @@ class GameMenu:
         pygame.display.flip()
         pygame.time.wait(5000)
 
-
+        pygame.mixer.music.stop()
         game.reset_scores()
+
+        main_menu = MainMenu(self.screen)
+        main_menu.run()
 
 
 class QuestionSet:
