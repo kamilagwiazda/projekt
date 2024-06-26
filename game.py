@@ -156,6 +156,9 @@ class GameMenu:
         self.message = ""
         self.message_color = (102, 191, 58)
 
+        self.correct_sound = pygame.mixer.Sound('music/correct.wav')
+        self.incorrect_sound = pygame.mixer.Sound('music/wrong.wav')
+
     def display(self, text):
         background = pygame.image.load(BACKGROUND_IMAGE)
         self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -333,10 +336,12 @@ class GameMenu:
             score = max(0, 100 - int(time_taken * 10))
             self.message = f"Good job! +{score} points"
             self.message_color = (102, 191, 58)
+            self.correct_sound.play()
         else:
             score = 0
             self.message = "You were close! 0 points"
             self.message_color = (224, 27, 62)
+            self.incorrect_sound.play()
 
         player_name = game.players[game.current_player_index][0]
         if player_name not in game.scores:
