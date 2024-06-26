@@ -202,7 +202,7 @@ class GameMenu:
             waiting_for_answer = True
 
             self.start_time = time.time()
-            while waiting_for_answer:
+            while waiting_for_answer and (time.time() - self.start_time) < 30:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -216,6 +216,9 @@ class GameMenu:
                                 )
                                 waiting_for_answer = False
 
+                self.update_timer()
+                pygame.time.Clock().tick(30)
+
             self.current_question_index += 1
 
         game.current_player_index += 1
@@ -225,6 +228,21 @@ class GameMenu:
         else:
             self.display_score()
 
+    def update_timer(self):
+                elapsed_time = time.time() - self.start_time
+                remaining_time = max(0, int(30 - elapsed_time))
+                timer_text = MAIN_FONT.render(str(remaining_time), True, WHITE)
+                timer_circle_color = (137, 76, 192)
+                pygame.draw.circle(self.screen, (0, 0, 0), (SCREEN_WIDTH - 50, 50), 30)
+                pygame.draw.circle(self.screen, timer_circle_color, (SCREEN_WIDTH - 50, 50), 30)
+                self.screen.blit(timer_text,
+                                 (SCREEN_WIDTH - 50 - timer_text.get_width() // 2, 50 - timer_text.get_height() // 2))
+
+                pygame.display.flip()
+
+    def show_points(self, points=0):
+        player_name = game.players[game.current_player_index][0]
+        game.scores[player_name] = game.scores.get(player_name, 0) + points
     def display_question_with_answers(self, question):
         background = pygame.image.load(BACKGROUND_IMAGE)
         self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
