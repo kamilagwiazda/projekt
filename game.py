@@ -11,15 +11,17 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-FONT = pygame.font.Font(None, 36)
-
+#FONT = pygame.font.Font(None, 36)
+LOGO_FONT = pygame.font.Font('fonts/gooddog-plain.regular.ttf', 100)
+MAIN_FONT = pygame.font.Font('fonts/Montserrat-Bold.ttf', 20)
+BACKGROUND_IMAGE = 'images/background.jpg'
 
 class Button:
     def __init__(self, rect, color, text):
         self.rect = pygame.Rect(rect)
         self.color = color
         self.text = text
-        self.text_surf = FONT.render(text, True, WHITE)
+        self.text_surf = MAIN_FONT.render(text, True, WHITE)
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 
     def draw(self, screen):
@@ -40,17 +42,18 @@ class BaseMenu:
         self.options.append((text, callback))
 
     def display(self):
-        self.screen.fill(WHITE)
-        title_text = FONT.render(self.title, True, BLACK)
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        title_text = LOGO_FONT.render(self.title, True, WHITE)
         self.screen.blit(
             title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50)
         )
 
         for index, (option_text, _) in enumerate(self.options):
-            option_surface = FONT.render(option_text, True, BLACK)
+            option_surface = MAIN_FONT.render(option_text, True, WHITE)
             self.screen.blit(
                 option_surface,
-                (SCREEN_WIDTH // 2 - option_surface.get_width() // 2, 150 + index * 50),
+                (SCREEN_WIDTH // 2 - option_surface.get_width() // 2, 200 + index * 70)
             )
         pygame.display.flip()
 
@@ -63,7 +66,7 @@ class BaseMenu:
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     for index, (_, callback) in enumerate(self.options):
-                        if 150 + index * 50 <= event.pos[1] <= 150 + index * 50 + 36:
+                        if 200 + index * 70 <= event.pos[1] <= 200 + index * 70 + 36:
                             callback()
 
             self.display()
@@ -72,7 +75,7 @@ class BaseMenu:
 
 class MainMenu(BaseMenu):
     def __init__(self, screen):
-        super().__init__(screen, "Main Menu")
+        super().__init__(screen, "Kahoot!")
         self.add_option("Create Questions Set", self.create_question_set)
         self.add_option("Add a Player", self.add_player)
         self.add_option("Start the Game", self.start_game)
@@ -100,8 +103,9 @@ class GameMenu:
         self.answer_buttons = []
 
     def display(self, text):
-        self.screen.fill(WHITE)
-        text_surface = FONT.render(text, True, BLACK)
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        text_surface = MAIN_FONT.render(text, True, WHITE)
         self.screen.blit(
             text_surface,
             (
@@ -162,8 +166,9 @@ class GameMenu:
             self.display_score()
 
     def display_question_with_answers(self, question):
-        self.screen.fill(WHITE)
-        question_text = FONT.render(question["question"], True, BLACK)
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        question_text = MAIN_FONT.render(question["question"], True, WHITE)
         self.screen.blit(
             question_text, (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 100)
         )
@@ -174,7 +179,7 @@ class GameMenu:
         self.answer_buttons = []
         for i, answer in enumerate(answers):
             answer_button = Button(
-                (SCREEN_WIDTH // 2 - 100, 200 + i * 50, 200, 50), BLACK, answer
+                (SCREEN_WIDTH // 2 - 100, 200 + i * 70, 200, 50), WHITE, answer
             )
             answer_button.draw(self.screen)
             self.answer_buttons.append(answer_button)
@@ -196,11 +201,12 @@ class GameMenu:
         game.scores[player_name] += score
 
     def display_score(self):
-        self.screen.fill(WHITE)
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
         score_text = "Final Scores:\n"
         y_offset = 100
         for player, score in game.scores.items():
-            player_score_text = FONT.render(f"{player}: {score}", True, BLACK)
+            player_score_text = MAIN_FONT.render(f"{player}: {score}", True, WHITE)
             self.screen.blit(
                 player_score_text,
                 (SCREEN_WIDTH // 2 - player_score_text.get_width() // 2, y_offset),
@@ -225,16 +231,17 @@ class QuestionSet:
         )
 
     def display(self, screen):
-        screen.fill(WHITE)
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
         if not game.question_sets:
-            no_questions_text = FONT.render("No questions yet!", True, BLACK)
+            no_questions_text = MAIN_FONT.render("No questions yet!", True, WHITE)
             screen.blit(
                 no_questions_text,
                 (SCREEN_WIDTH // 2 - no_questions_text.get_width() // 2, 200),
             )
         for index, qset in enumerate(game.question_sets):
-            qset_text = FONT.render(qset["question"], True, BLACK)
-            screen.blit(qset_text, (50, 100 + index * 50))
+            qset_text = MAIN_FONT.render(qset["question"], True, WHITE)
+            screen.blit(qset_text, (50, 100 + index * 70))
         self.add_button.draw(screen)
         self.back_button.draw(screen)
         pygame.display.flip()
@@ -273,9 +280,10 @@ class QuestionSet:
                     else:
                         text += event.unicode
 
-            screen.fill(WHITE)
-            prompt_text = FONT.render(prompt, True, BLACK)
-            input_text = FONT.render(text, True, BLACK)
+            background = pygame.image.load(BACKGROUND_IMAGE)
+            screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+            prompt_text = MAIN_FONT.render(prompt, True, WHITE)
+            input_text = MAIN_FONT.render(text, True, WHITE)
             screen.blit(prompt_text, (50, 50))
             screen.blit(input_text, (50, 100))
             pygame.display.flip()
@@ -329,9 +337,10 @@ class PlayerSet:
                     else:
                         text += event.unicode
 
-            screen.fill(WHITE)
-            prompt_text = FONT.render(prompt, True, BLACK)
-            input_text = FONT.render(text, True, BLACK)
+            background = pygame.image.load(BACKGROUND_IMAGE)
+            screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+            prompt_text = MAIN_FONT.render(prompt, True, WHITE)
+            input_text = MAIN_FONT.render(text, True, WHITE)
             screen.blit(prompt_text, (50, 50))
             screen.blit(input_text, (50, 100))
             pygame.display.flip()
@@ -347,16 +356,17 @@ class PlayerMenu(BaseMenu):
         self.back_button = Button((300, 500, 200, 50), BLACK, "Back to main menu")
 
     def display(self):
-        self.screen.fill(WHITE)
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
         if not game.players:
-            no_players_text = FONT.render("No players yet!", True, BLACK)
+            no_players_text = MAIN_FONT.render("No players yet!", True, WHITE)
             self.screen.blit(
                 no_players_text,
                 (SCREEN_WIDTH // 2 - no_players_text.get_width() // 2, 200),
             )
         for index, player in enumerate(game.players):
-            player_text = FONT.render(player[0], True, BLACK)
-            self.screen.blit(player_text, (50, 100 + index * 50))
+            player_text = MAIN_FONT.render(player[0], True, WHITE)
+            self.screen.blit(player_text, (50, 100 + index * 70))
         self.add_button.draw(self.screen)
         self.back_button.draw(self.screen)
         pygame.display.flip()
