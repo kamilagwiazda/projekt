@@ -281,6 +281,12 @@ class QuestionSet:
         text = ""
         input_active = True
         self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 100, 300, 50), BUTTON_BG_COLOR, "Cancel")
+        input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 200)
+        input_color = WHITE
+        input_border_radius = 20
+        max_text_width = input_rect.width - 20
+        max_lines = (input_rect.height - 20) // MAIN_FONT.get_height()
+
         while input_active:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -300,9 +306,30 @@ class QuestionSet:
             background = pygame.image.load(BACKGROUND_IMAGE)
             screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
             prompt_text = MAIN_FONT.render(prompt, True, WHITE)
-            input_text = MAIN_FONT.render(text, True, WHITE)
+            pygame.draw.rect(screen, input_color, input_rect, border_radius=input_border_radius)
+
+            words = text.split(' ')
+            lines = []
+            current_line = ""
+            for word in words:
+                if current_line:
+                    test_line = current_line + " " + word
+                else:
+                    test_line = word
+                if MAIN_FONT.render(test_line, True, BLACK).get_width() <= max_text_width:
+                    current_line = test_line
+                else:
+                    lines.append(current_line)
+                    current_line = word + " "
+
+            lines.append(current_line)
+
+            lines = lines[-max_lines:]
+
             screen.blit(prompt_text, (50, 50))
-            screen.blit(input_text, (50, 100))
+            for i, line in enumerate(lines):
+                input_text = MAIN_FONT.render(line, True, BLACK)
+                screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
             self.draw_cancel_button(screen)
             pygame.display.flip()
             pygame.time.Clock().tick(30)
@@ -350,6 +377,12 @@ class PlayerSet:
         text = ""
         input_active = True
         self.cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 100, 300, 50), BUTTON_BG_COLOR, "Cancel")
+        input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 50)
+        input_color = WHITE
+        input_border_radius = 20
+        max_text_width = input_rect.width - 20
+        max_lines = (input_rect.height - 20) // MAIN_FONT.get_height()
+
         while input_active:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -369,9 +402,27 @@ class PlayerSet:
             background = pygame.image.load(BACKGROUND_IMAGE)
             screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
             prompt_text = MAIN_FONT.render(prompt, True, WHITE)
-            input_text = MAIN_FONT.render(text, True, WHITE)
+            pygame.draw.rect(screen, input_color, input_rect, border_radius=input_border_radius)
+
+            words = text.split(' ')
+            lines = []
+            current_line = ""
+
+            for word in words:
+                test_line = current_line + word + " "
+                if MAIN_FONT.render(test_line, True, BLACK).get_width() <= max_text_width:
+                    current_line = test_line
+                else:
+                    lines.append(current_line)
+                    current_line = word + " "
+
+            lines.append(current_line)
+            lines = lines[-max_lines:]
+
             screen.blit(prompt_text, (50, 50))
-            screen.blit(input_text, (50, 100))
+            for i, line in enumerate(lines):
+                input_text = MAIN_FONT.render(line.strip(), True, BLACK)
+                screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
             self.draw_cancel_button(screen)
             pygame.display.flip()
             pygame.time.Clock().tick(30)
