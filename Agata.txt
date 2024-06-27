@@ -6,7 +6,7 @@ Wymagania:
 - T osoba z najwyższym wynikiem wygrywa
 - T sprawdzić możliwość wyczyszczenia kodu pod wględem powtarzalnym elementów i dziedziczenia
 - T zastanowić się, czy podział na pliki jest sensowny
+- T próba rozpoczęcia gry bez min pytań i graczy powinna dawać jawny komunikat
 - sprawdzić, wyczyścić nazwy
 - możliwość usuwania pytań i graczy
-- T próba rozpoczęcia gry bez min pytań i graczy powinna dawać jawny komunikat
 - usunąć wszelkie printy
