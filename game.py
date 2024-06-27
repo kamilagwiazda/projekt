@@ -101,6 +101,8 @@ class MainMenu(BaseMenu):
 
         pygame.mixer.music.load('music/background.mp3')
         pygame.mixer.music.play(-1)
+        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
+
 
     def display(self):
         background = pygame.image.load(BACKGROUND_IMAGE)
@@ -126,15 +128,19 @@ class MainMenu(BaseMenu):
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.create_question_set_button.is_clicked(event.pos):
+                        self.button_click_sound.play()
                         self.create_question_set()
                     if self.add_player_button.is_clicked(event.pos):
+                        self.button_click_sound.play()
                         self.add_player()
                     if self.start_game_button.is_clicked(event.pos):
+                        self.button_click_sound.play()
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('music/gameplay.mp3')
                         pygame.mixer.music.play()
                         self.start_game()
                     if self.exit_button.is_clicked(event.pos):
+                        self.button_click_sound.play()
                         pygame.quit()
                         sys.exit()
 
@@ -455,6 +461,9 @@ class QuestionSet:
         self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a new question")
         self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
 
+        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
+
+
     def add_question_set(self, question, correct_answer, incorrect_answers):
         game.question_sets.append(
             {
@@ -529,8 +538,10 @@ class QuestionSet:
                         text += event.unicode
                 if event.type == pygame.MOUSEBUTTONDOWN:
                             if self.cancel_button.is_clicked(event.pos):
+                                self.button_click_sound.play()
                                 return None
                             if self.submit_button.is_clicked(event.pos):
+                                self.button_click_sound.play()
                                 input_active = False
 
             background = pygame.image.load(BACKGROUND_IMAGE)
@@ -599,6 +610,8 @@ class QuestionSetMenu(BaseMenu):
 
 
 class PlayerSet:
+    def __init__(self):
+        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
     def process_add_player(self, screen):
         player_name = self.get_text_input("Enter player's name: ", screen)
         if player_name is not None:
@@ -632,8 +645,10 @@ class PlayerSet:
                         text += event.unicode
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.cancel_button.is_clicked(event.pos):
+                        self.button_click_sound.play()
                         return None
                     if self.submit_button.is_clicked(event.pos):
+                        self.button_click_sound.play()
                         input_active = False
 
             background = pygame.image.load(BACKGROUND_IMAGE)
@@ -678,6 +693,9 @@ class PlayerMenu(BaseMenu):
         self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a player")
         self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
 
+        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
+
+
     def display(self):
         background = pygame.image.load(BACKGROUND_IMAGE)
         self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
@@ -697,8 +715,10 @@ class PlayerMenu(BaseMenu):
     def handle_event(self, event, main_menu_callback):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.add_button.is_clicked(event.pos):
+                self.button_click_sound.play()
                 self.player_set.process_add_player(self.screen)
             if self.back_button.is_clicked(event.pos):
+                self.button_click_sound.play()
                 main_menu_callback()
 
     def run(self):
