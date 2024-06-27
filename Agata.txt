@@ -3,8 +3,10 @@ Wymagania:
 - T tylko jedna odpowiedź jest prawidłowa (ale odp nie muszą być unikalne)
 - T wyświetla się pytania, gracz klika myszką i dopiero wyświetlają się odpowiedzi
 - T nie można zacząć gry jeżeli nie ma żadnego zestawu pytań
-- osoba z najwyższym wynikiem wygrywa
+- T osoba z najwyższym wynikiem wygrywa
+- T sprawdzić możliwość wyczyszczenia kodu pod wględem powtarzalnym elementów i dziedziczenia
+- T zastanowić się, czy podział na pliki jest sensowny
 - sprawdzić, wyczyścić nazwy
-- sprawdzić możliwość wyczyszczenia kodu pod wględem powtarzalnym elementów i dziedziczenia
 - możliwość usuwania pytań i graczy
-- zastanowić się, czy podział na pliki jest sensowny
+- próba rozpoczęcia gry bez min pytań i graczy powinna dawać jawny komunikat
+- usunąć wszelkie printy
