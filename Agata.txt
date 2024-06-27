@@ -8,5 +8,5 @@ Wymagania:
 - T zastanowić się, czy podział na pliki jest sensowny
 - sprawdzić, wyczyścić nazwy
 - możliwość usuwania pytań i graczy
-- próba rozpoczęcia gry bez min pytań i graczy powinna dawać jawny komunikat
+- T próba rozpoczęcia gry bez min pytań i graczy powinna dawać jawny komunikat
 - usunąć wszelkie printy

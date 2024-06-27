@@ -44,7 +44,6 @@ class Button:
     def is_clicked(self, mouse_pos):
         return self.rect.collidepoint(mouse_pos)
 
-
 class BaseMenu:
     def __init__(self, screen, title=None):
         self.screen = screen
@@ -86,138 +85,10 @@ class BaseMenu:
             self.display()
             pygame.time.Clock().tick(30)
 
-
-class QuestionSet:
-    def __init__(self):
-        self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a new question")
-        self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
-        pygame.mixer.music.load('music/background.mp3')
-        pygame.mixer.music.play(-1)
-        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
-
-    def process_add_question_set(self, screen):
-        question = self.get_text_input("Enter the question: ", screen)
-        if question is None:
-            return
-        correct_answer = self.get_text_input("Enter the correct answer: ", screen)
-        if correct_answer is None:
-            return
-        incorrect_answers = []
-        for i in range(3):
-            incorrect_answer = self.get_text_input(f"Enter incorrect answer {i + 1}: ", screen)
-            if incorrect_answer is None:
-                return
-            incorrect_answers.append(incorrect_answer)
-        game.question_sets.append({"question": question, "correct_answer": correct_answer, "incorrect_answers": incorrect_answers})
-        print("Question set added")
-
-    def get_text_input(self, prompt, screen):
-        text = ""
-        input_active = True
-        submit_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 150, 300, 50), BUTTON_BG_COLOR, "Submit")
-        cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 80, 300, 50), BUTTON_BG_COLOR, "Cancel")
-        input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 200)
-        input_color = WHITE
-        input_border_radius = 20
-        max_text_width = input_rect.width - 20
-        max_lines = (input_rect.height - 20) // MAIN_FONT.get_height()
-
-        while input_active:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        input_active = False
-                    elif event.key == pygame.K_BACKSPACE:
-                        text = text[:-1]
-                    else:
-                        text += event.unicode
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if cancel_button.is_clicked(event.pos):
-                        return None
-                    if submit_button.is_clicked(event.pos):
-                        input_active = False
-
-            background = pygame.image.load(BACKGROUND_IMAGE)
-            screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-            prompt_text = MAIN_FONT.render(prompt, True, WHITE)
-            pygame.draw.rect(screen, input_color, input_rect, border_radius=input_border_radius)
-
-            words = text.split(" ")
-            lines = []
-            current_line = ""
-            for word in words:
-                if current_line:
-                    test_line = current_line + " " + word
-                else:
-                    test_line = word
-                if MAIN_FONT.render(test_line, True, BLACK).get_width() <= max_text_width:
-                    current_line = test_line
-                else:
-                    lines.append(current_line)
-                    current_line = word + " "
-
-            lines.append(current_line)
-            lines = lines[-max_lines:]
-
-            screen.blit(prompt_text, (50, 50))
-            for i, line in enumerate(lines):
-                input_text = MAIN_FONT.render(line, True, BLACK)
-                screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
-            submit_button.draw(screen)
-            cancel_button.draw(screen)
-            pygame.display.flip()
-            pygame.time.Clock().tick(30)
-        return text
-
-    def display(self, screen):
-        background = pygame.image.load(BACKGROUND_IMAGE)
-        screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-        if not game.question_sets:
-            no_questions_text = MAIN_FONT.render("No questions yet!", True, WHITE)
-            screen.blit(no_questions_text, (SCREEN_WIDTH // 2 - no_questions_text.get_width() // 2, 200))
-        for index, qset in enumerate(game.question_sets):
-            qset_text = MAIN_FONT.render(qset["question"], True, WHITE)
-            screen.blit(qset_text, (50, 100 + index * 70))
-        self.add_button.draw(screen)
-        self.back_button.draw(screen)
-        pygame.display.flip()
-
-    def handle_event(self, event, screen, main_menu_callback):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.add_button.is_clicked(event.pos):
-                self.process_add_question_set(screen)
-            if self.back_button.is_clicked(event.pos):
-                main_menu_callback()
-
-
-class QuestionSetMenu(BaseMenu):
-    def __init__(self, screen):
-        super().__init__(screen, "Question Set")
-        self.question_set = QuestionSet()
-
-    def run(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                self.question_set.handle_event(event, self.screen, self.go_back_to_main_menu)
-            self.question_set.display(self.screen)
-            pygame.time.Clock().tick(30)
-
-    def go_back_to_main_menu(self):
-        main_menu = MainMenu(self.screen)
-        main_menu.run()
-
-
 class MainMenu(BaseMenu):
     def __init__(self, screen):
         super().__init__(screen, "Kahoot!")
-        self.add_option("Create Questions Set", self.create_question_set)
+        self.add_option("Add a Question", self.create_question_set)
         self.add_option("Add a Player", self.add_player)
         self.add_option("Start the Game", self.start_game)
         self.add_option("Exit", self.exit_game)
@@ -234,127 +105,18 @@ class MainMenu(BaseMenu):
         if len(game.question_sets) > 0 and len(game.players) > 0:
             GameMenu(self.screen).run()
         else:
-            print("Cannot start game: At least one question set and one player required")
+            self.show_message("Cannot start game: At least one question set and one player required")
 
     def exit_game(self):
         pygame.quit()
         sys.exit()
 
-
-class PlayerSet:
-    def __init__(self):
-        self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a player")
-        self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
-        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
-
-    def process_add_player(self, screen):
-        player_name = self.get_text_input("Enter player's name: ", screen)
-        if player_name is not None:
-            game.players.append((player_name, 0))
-            print("Player added")
-        else:
-            print("Adding player was cancelled.")
-
-    def get_text_input(self, prompt, screen):
-        text = ""
-        input_active = True
-        submit_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 150, 300, 50), BUTTON_BG_COLOR, "Submit")
-        cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 80, 300, 50), BUTTON_BG_COLOR, "Cancel")
-        input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 50)
-        input_color = WHITE
-        input_border_radius = 20
-        max_text_width = input_rect.width - 20
-        max_lines = (input_rect.height - 20) // MAIN_FONT.get_height()
-
-        while input_active:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        input_active = False
-                    elif event.key == pygame.K_BACKSPACE:
-                        text = text[:-1]
-                    else:
-                        text += event.unicode
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if cancel_button.is_clicked(event.pos):
-                        return None
-                    if submit_button.is_clicked(event.pos):
-                        input_active = False
-
-            background = pygame.image.load(BACKGROUND_IMAGE)
-            screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-            prompt_text = MAIN_FONT.render(prompt, True, WHITE)
-            pygame.draw.rect(screen, input_color, input_rect, border_radius=input_border_radius)
-
-            words = text.split(" ")
-            lines = []
-            current_line = ""
-
-            for word in words:
-                test_line = current_line + word + " "
-                if MAIN_FONT.render(test_line, True, BLACK).get_width() <= max_text_width:
-                    current_line = test_line
-                else:
-                    lines.append(current_line)
-                    current_line = word + " "
-
-            lines.append(current_line)
-            lines = lines[-max_lines:]
-
-            screen.blit(prompt_text, (50, 50))
-            for i, line in enumerate(lines):
-                input_text = MAIN_FONT.render(line.strip(), True, BLACK)
-                screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
-            submit_button.draw(screen)
-            cancel_button.draw(screen)
-            pygame.display.flip()
-            pygame.time.Clock().tick(30)
-        return text
-
-    def display(self, screen):
-        background = pygame.image.load(BACKGROUND_IMAGE)
-        screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-        if not game.players:
-            no_players_text = MAIN_FONT.render("No players yet!", True, WHITE)
-            screen.blit(no_players_text, (SCREEN_WIDTH // 2 - no_players_text.get_width() // 2, 200))
-        for index, player in enumerate(game.players):
-            player_text = MAIN_FONT.render(player[0], True, WHITE)
-            screen.blit(player_text, (50, 100 + index * 70))
-        self.add_button.draw(screen)
-        self.back_button.draw(screen)
+    def show_message(self, message):
+        self.display_background()
+        message_surf = MAIN_FONT.render(message, True, WHITE)
+        self.screen.blit(message_surf, (SCREEN_WIDTH // 2 - message_surf.get_width() // 2, SCREEN_HEIGHT // 2))
         pygame.display.flip()
-
-    def handle_event(self, event, screen, main_menu_callback):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.add_button.is_clicked(event.pos):
-                self.process_add_player(screen)
-            if self.back_button.is_clicked(event.pos):
-                main_menu_callback()
-
-
-class PlayerMenu(BaseMenu):
-    def __init__(self, screen):
-        super().__init__(screen, "Current players")
-        self.player_set = PlayerSet()
-
-    def run(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                self.player_set.handle_event(event, self.screen, self.go_back_to_main_menu)
-            self.player_set.display(self.screen)
-            pygame.time.Clock().tick(30)
-
-    def go_back_to_main_menu(self):
-        main_menu = MainMenu(self.screen)
-        main_menu.run()
-
+        pygame.time.wait(3000)
 
 class GameMenu(BaseMenu):
     def __init__(self, screen):
@@ -591,7 +353,6 @@ class GameMenu(BaseMenu):
         main_menu = MainMenu(self.screen)
         main_menu.run()
 
-
 class Game:
     def __init__(self):
         self.players = []
@@ -599,17 +360,270 @@ class Game:
         self.current_player_index = 0
         self.scores = {}
 
-    def start(self):
+    def start(self, screen):
         if len(self.question_sets) > 0 and len(self.players) > 0:
-            print("Game started")
             pygame.quit()
             sys.exit()
         else:
-            print("Cannot start game: At least one question set and one player required")
+            main_menu = MainMenu(screen)
+            main_menu.show_message("Cannot start game: At least one question set and one player required")
 
     def reset_scores(self):
         self.scores = {}
 
+class QuestionSet:
+    def __init__(self):
+        self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a new question")
+        self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
+        pygame.mixer.music.load('music/background.mp3')
+        pygame.mixer.music.play(-1)
+        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
+
+    def process_add_question_set(self, screen):
+        question = self.get_text_input("Enter the question: ", screen)
+        if question is None:
+            return
+        correct_answer = self.get_text_input("Enter the correct answer: ", screen)
+        if correct_answer is None:
+            return
+        incorrect_answers = []
+        for i in range(3):
+            incorrect_answer = self.get_text_input(f"Enter incorrect answer {i + 1}: ", screen)
+            if incorrect_answer is None:
+                return
+            incorrect_answers.append(incorrect_answer)
+        game.question_sets.append({"question": question, "correct_answer": correct_answer, "incorrect_answers": incorrect_answers})
+        self.display_message(screen, "Question set added")
+
+    def get_text_input(self, prompt, screen):
+        text = ""
+        input_active = True
+        submit_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 150, 300, 50), BUTTON_BG_COLOR, "Submit")
+        cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 80, 300, 50), BUTTON_BG_COLOR, "Cancel")
+        input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 200)
+        input_color = WHITE
+        input_border_radius = 20
+        max_text_width = input_rect.width - 20
+        max_lines = (input_rect.height - 20) // MAIN_FONT.get_height()
+
+        while input_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        input_active = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        text += event.unicode
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if cancel_button.is_clicked(event.pos):
+                        return None
+                    if submit_button.is_clicked(event.pos):
+                        input_active = False
+
+            background = pygame.image.load(BACKGROUND_IMAGE)
+            screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+            prompt_text = MAIN_FONT.render(prompt, True, WHITE)
+            pygame.draw.rect(screen, input_color, input_rect, border_radius=input_border_radius)
+
+            words = text.split(" ")
+            lines = []
+            current_line = ""
+            for word in words:
+                if current_line:
+                    test_line = current_line + " " + word
+                else:
+                    test_line = word
+                if MAIN_FONT.render(test_line, True, BLACK).get_width() <= max_text_width:
+                    current_line = test_line
+                else:
+                    lines.append(current_line)
+                    current_line = word + " "
+
+            lines.append(current_line)
+            lines = lines[-max_lines:]
+
+            screen.blit(prompt_text, (50, 50))
+            for i, line in enumerate(lines):
+                input_text = MAIN_FONT.render(line, True, BLACK)
+                screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
+            submit_button.draw(screen)
+            cancel_button.draw(screen)
+            pygame.display.flip()
+            pygame.time.Clock().tick(30)
+        return text
+
+    def display_message(self, screen, message):
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        message_surf = MAIN_FONT.render(message, True, WHITE)
+        screen.blit(message_surf, (SCREEN_WIDTH // 2 - message_surf.get_width() // 2, SCREEN_HEIGHT // 2))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+
+class QuestionSetMenu(BaseMenu):
+    def __init__(self, screen):
+        super().__init__(screen, "Questions")
+        self.question_set = QuestionSet()
+
+    def run(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                self.handle_event(event)
+            self.display()
+            pygame.time.Clock().tick(30)
+
+    def display(self):
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        if not game.question_sets:
+            no_questions_text = MAIN_FONT.render("No questions yet!", True, WHITE)
+            self.screen.blit(no_questions_text, (SCREEN_WIDTH // 2 - no_questions_text.get_width() // 2, 200))
+        for index, qset in enumerate(game.question_sets):
+            qset_text = MAIN_FONT.render(qset["question"], True, WHITE)
+            self.screen.blit(qset_text, (50, 100 + index * 70))
+        self.question_set.add_button.draw(self.screen)
+        self.question_set.back_button.draw(self.screen)
+        pygame.display.flip()
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.question_set.add_button.is_clicked(event.pos):
+                self.question_set.process_add_question_set(self.screen)
+            if self.question_set.back_button.is_clicked(event.pos):
+                self.go_back_to_main_menu()
+
+    def go_back_to_main_menu(self):
+        main_menu = MainMenu(self.screen)
+        main_menu.run()
+
+class PlayerSet:
+    def __init__(self):
+        self.add_button = Button((SCREEN_WIDTH // 2 - 150, 400, 300, 50), BUTTON_BG_COLOR, "Add a player")
+        self.back_button = Button((SCREEN_WIDTH // 2 - 150, 500, 300, 50), BUTTON_BG_COLOR, "Back to main menu")
+        self.button_click_sound = pygame.mixer.Sound('music/click.mp3')
+
+    def process_add_player(self, screen):
+        player_name = self.get_text_input("Enter player's name: ", screen)
+        if player_name is not None:
+            game.players.append((player_name, 0))
+            self.display_message(screen, "Player added")
+        else:
+            self.display_message(screen, "Adding player was cancelled.")
+
+    def get_text_input(self, prompt, screen):
+        text = ""
+        input_active = True
+        submit_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 150, 300, 50), BUTTON_BG_COLOR, "Submit")
+        cancel_button = Button((SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 80, 300, 50), BUTTON_BG_COLOR, "Cancel")
+        input_rect = pygame.Rect(50, 100, SCREEN_WIDTH - 100, 50)
+        input_color = WHITE
+        input_border_radius = 20
+        max_text_width = input_rect.width - 20
+        max_lines = (input_rect.height - 20) // MAIN_FONT.get_height()
+
+        while input_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        input_active = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        text += event.unicode
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if cancel_button.is_clicked(event.pos):
+                        return None
+                    if submit_button.is_clicked(event.pos):
+                        input_active = False
+
+            background = pygame.image.load(BACKGROUND_IMAGE)
+            screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+            prompt_text = MAIN_FONT.render(prompt, True, WHITE)
+            pygame.draw.rect(screen, input_color, input_rect, border_radius=input_border_radius)
+
+            words = text.split(" ")
+            lines = []
+            current_line = ""
+
+            for word in words:
+                test_line = current_line + word + " "
+                if MAIN_FONT.render(test_line, True, BLACK).get_width() <= max_text_width:
+                    current_line = test_line
+                else:
+                    lines.append(current_line)
+                    current_line = word + " "
+
+            lines.append(current_line)
+            lines = lines[-max_lines:]
+
+            screen.blit(prompt_text, (50, 50))
+            for i, line in enumerate(lines):
+                input_text = MAIN_FONT.render(line.strip(), True, BLACK)
+                screen.blit(input_text, (input_rect.x + 10, input_rect.y + 10 + i * MAIN_FONT.get_height()))
+            submit_button.draw(screen)
+            cancel_button.draw(screen)
+            pygame.display.flip()
+            pygame.time.Clock().tick(30)
+        return text
+
+    def display_message(self, screen, message):
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        message_surf = MAIN_FONT.render(message, True, WHITE)
+        screen.blit(message_surf, (SCREEN_WIDTH // 2 - message_surf.get_width() // 2, SCREEN_HEIGHT // 2))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+
+class PlayerMenu(BaseMenu):
+    def __init__(self, screen):
+        super().__init__(screen, "Current players")
+        self.player_set = PlayerSet()
+
+    def run(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                self.handle_event(event)
+            self.display()
+            pygame.time.Clock().tick(30)
+
+    def display(self):
+        background = pygame.image.load(BACKGROUND_IMAGE)
+        self.screen.blit(pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+        if not game.players:
+            no_players_text = MAIN_FONT.render("No players yet!", True, WHITE)
+            self.screen.blit(no_players_text, (SCREEN_WIDTH // 2 - no_players_text.get_width() // 2, 200))
+        for index, player in enumerate(game.players):
+            player_text = MAIN_FONT.render(player[0], True, WHITE)
+            self.screen.blit(player_text, (50, 100 + index * 70))
+        self.player_set.add_button.draw(self.screen)
+        self.player_set.back_button.draw(self.screen)
+        pygame.display.flip()
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.player_set.add_button.is_clicked(event.pos):
+                self.player_set.process_add_player(self.screen)
+            if self.player_set.back_button.is_clicked(event.pos):
+                self.go_back_to_main_menu()
+
+    def go_back_to_main_menu(self):
+        main_menu = MainMenu(self.screen)
+        main_menu.run()
 
 # Initialize Game
 game = Game()
